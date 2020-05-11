@@ -45,7 +45,7 @@ RT-Thread online packages
 
 ## 设置参数
 
-### 芯片数量：
+### 单个包的最大数据发送长度：
 `RT_CAN_YMODEM_PACK_SIZE_TX`  可通过 menuconfig 中的 `(6)   can pack data max size ` 选项设置，
 
 

@@ -20,7 +20,7 @@
 struct rt_can_ymodem_device can_ymodem_device;
 
 /*  fun of can send  */
-static int rt_hw_can_ymodem_topctrl_to_ctrlbox(struct rt_can_ymodem_device *can_ymodem,
+static int rt_hw_can_ymodem_tx(struct rt_can_ymodem_device *can_ymodem,
                                 const void       *buffer,
                                 rt_size_t         size)
 {
@@ -28,21 +28,21 @@ static int rt_hw_can_ymodem_topctrl_to_ctrlbox(struct rt_can_ymodem_device *can_
 }    
 
 /*  recv ymodem msg  */
-void drv_can_ymodem_ctrlbox_to_topctrl(const void  *buffer, rt_size_t size)
+void drv_can_ymodem_rx(const void  *buffer, rt_size_t size)
 {
     rt_can_ymodem_rx(&can_ymodem_device, buffer, size);
 }
 
-static const struct rt_can_ymodem_ops topctrl_can_ymodem_ops =
+static const struct rt_can_ymodem_ops _can_ymodem_ops =
 {
-    .puts = rt_hw_can_ymodem_topctrl_to_ctrlbox,
+    .puts = rt_hw_can_ymodem_tx,
 };
 
 int rt_hw_can_ymodem_init(void)
 {
     rt_err_t result = 0;
     
-    can_ymodem_device.ops = &topctrl_can_ymodem_ops;
+    can_ymodem_device.ops = &_can_ymodem_ops;
     
     result = rt_hw_can_ymodem_register(&can_ymodem_device, "can_ymodem", RT_DEVICE_FLAG_RDWR, RT_NULL);
     

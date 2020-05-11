@@ -55,7 +55,7 @@ struct rt_can_ymodem_ops
 
 void rt_can_ymodem_rx(struct rt_can_ymodem_device *can_ymodem, const void  *buffer, rt_size_t size);
 
-rt_err_t rt_hw_can_ymodem_register(struct rt_can_ymodem_device *serial,
+rt_err_t rt_hw_can_ymodem_register(struct rt_can_ymodem_device *can_ymodem,
                                    const char              *name,
                                    rt_uint32_t              flag,
                                    void                    *data);

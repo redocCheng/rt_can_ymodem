@@ -274,16 +274,16 @@ const static struct rt_device_ops can_ymodem_ops =
 };
 #endif
 
-rt_err_t rt_hw_can_ymodem_register(struct rt_can_ymodem_device *serial,
+rt_err_t rt_hw_can_ymodem_register(struct rt_can_ymodem_device *can_ymodem,
                                    const char              *name,
                                    rt_uint32_t              flag,
                                    void                    *data)
 {
     rt_err_t ret;
     struct rt_device *device;
-    RT_ASSERT(serial != RT_NULL);
+    RT_ASSERT(can_ymodem != RT_NULL);
 
-    device = &(serial->parent);
+    device = &(can_ymodem->parent);
 
     device->type        = RT_Device_Class_Char;
     device->rx_indicate = RT_NULL;

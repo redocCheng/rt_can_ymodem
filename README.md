@@ -83,12 +83,12 @@ rt_err_t rt_hw_can_ymodem_register(struct rt_can_ymodem_device *can_ymodem,
 |can_ymodem|设备|
 |name|设备名称|
 |flag|设备打开标志|
+|data|私有数据|
 |返回|注释|
 |----|----|
 |RT_EOK|正常|
 |-RT_ERROR|异常|
 
-说明：直接将数据写入显示寄存器，即直接控制(DP/A/B/C/D/E/F/G)。
 
 
 ## 驱动示例

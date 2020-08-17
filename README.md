@@ -58,6 +58,7 @@ RT-Thread online packages
 ```C
 void rt_can_ymodem_rx(struct rt_can_ymodem_device *can_ymodem, const void  *buffer, rt_size_t size)
 ```
+can给ymodem发送数据，在can接受解析线程中调用。
 
 |参数|注释|
 |----|----|
@@ -68,8 +69,24 @@ void rt_can_ymodem_rx(struct rt_can_ymodem_device *can_ymodem, const void  *buff
 |----|----|
 |void|没有|
 
+2. 映射发送函数
+```C
+static int rt_hw_can_ymodem_tx(struct rt_can_ymodem_device *can_ymodem,
+                                const void       *buffer,
+                                rt_size_t         size)
+```
+ymodem给can发送数据，里面需要调用can设备的发送函数，这个函数将会注册到到can_ymodem设备上。
 
-2. 注册can_ymodem设备
+|参数|注释|
+|----|----|
+|can_ymodem|设备|
+|buffer|发送数据指针|
+|size| 发送数据长度|
+|返回|注释|
+|----|----|
+|int|暂时没有使用，建议正常返回发送长度，不正常返回-RT_ERROR|
+
+3. 注册can_ymodem设备
 
 ```C
 rt_err_t rt_hw_can_ymodem_register(struct rt_can_ymodem_device *can_ymodem,

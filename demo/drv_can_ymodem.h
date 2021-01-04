@@ -13,6 +13,15 @@
 
 #include <rtthread.h>
 
+typedef enum
+{
+    CAN_CMD_FILE_CMD_MASTER = 0,
+    CAN_CMD_FILE_CMD_SLAVE,
+    CAN_CMD_FILE_FILE_MASTER,
+    CAN_CMD_FILE_FILE_SLAVE,
+    
+}can_cmd_file_t;
+
 void drv_can_ymodem_recv(uint32_t ch, const void *buffer, rt_size_t size);
 
 #endif

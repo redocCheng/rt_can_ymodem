@@ -17,6 +17,8 @@
 #define LOG_TAG             "drv.can_ymodem"
 #include <drv_log.h>
 
+#define CAN_ID_KEYBOARD0_TO_SC_FILE   (0x30)
+
 struct rt_can_ymodem_device can_ymodem_device;
 
 static rt_err_t can_file_send(uint32_t can_id, can_cmd_file_t cmd, uint8_t *buffer, uint8_t size);

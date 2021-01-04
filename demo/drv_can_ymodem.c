@@ -60,9 +60,12 @@ static int rt_hw_can_ymodem_send(struct rt_can_ymodem_device *can_ymodem,
     return RT_EOK;
 }    
 
-void drv_can_ymodem_recv(const void *buffer, rt_size_t size)
+void drv_can_ymodem_recv(uint32_t ch, const void *buffer, rt_size_t size)
 {
-    rt_can_ymodem_rx(&can_ymodem_device, buffer, size);
+    if(CAN_ID_KEYBOARD0_TO_SC_FILE == ch)
+    {
+        rt_can_ymodem_rx(&can_ymodem_device, buffer, size);
+    }
 }
 
 static const struct rt_can_ymodem_ops topctrl_can_ymodem_ops =

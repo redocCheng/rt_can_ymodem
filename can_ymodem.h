@@ -40,6 +40,8 @@ struct rt_can_ymodem_device
     const struct rt_can_ymodem_ops *ops;
     
     void *can_ymodem_rx;
+    
+    rt_uint32_t channel;
 };
 typedef struct rt_can_ymodem_device rt_can_ymodem_t;
 

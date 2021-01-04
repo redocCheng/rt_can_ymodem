@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Anke Development Team
+ * Copyright (c) 2019-2020, redoc
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -19,30 +19,64 @@
 
 struct rt_can_ymodem_device can_ymodem_device;
 
-/*  fun of can send  */
-static int rt_hw_can_ymodem_tx(struct rt_can_ymodem_device *can_ymodem,
-                                const void       *buffer,
-                                rt_size_t         size)
+static rt_err_t can_file_send(uint32_t can_id, can_cmd_file_t cmd, uint8_t *buffer, uint8_t size);
+
+static rt_err_t can_file_send(uint32_t can_id, can_cmd_file_t cmd, uint8_t *buffer, uint8_t size)
 {
-    // can_send(id, cmd, buffer, size)
+    uint8_t *pdata = rt_calloc(1, 8);
+    
+    if(0 == size)
+    {
+        log_e("can file send size can't be zero!");
+        goto __exit;
+    }
+    
+    *pdata = cmd;
+    rt_memcpy(pdata + CAN_FILE_CMD_SIZE, buffer, size);
+
+    can_send(can_id, pdata, size + CAN_FILE_CMD_SIZE);
+    
+    rt_free(pdata);
+    
+    return RT_EOK;
+    
+__exit:
+    
+    rt_free(pdata);
+    
+    return -RT_ERROR;
+}
+
+
+static int rt_hw_can_ymodem_send(struct rt_can_ymodem_device *can_ymodem,
+                                 const void       *buffer,
+                                 rt_size_t         size)
+{
+    if(CAN_ID_KEYBOARD0_TO_SC_FILE == can_ymodem->channel)
+    {
+        can_file_send(can_ymodem->channel, CAN_CMD_FILE_FILE_SLAVE, (uint8_t*)buffer, size);
+    }
+
+    return RT_EOK;
 }    
 
-/*  recv ymodem msg  */
-void drv_can_ymodem_rx(const void  *buffer, rt_size_t size)
+void drv_can_ymodem_recv(const void *buffer, rt_size_t size)
 {
     rt_can_ymodem_rx(&can_ymodem_device, buffer, size);
 }
 
-static const struct rt_can_ymodem_ops _can_ymodem_ops =
+static const struct rt_can_ymodem_ops topctrl_can_ymodem_ops =
 {
-    .puts = rt_hw_can_ymodem_tx,
+    .puts = rt_hw_can_ymodem_send,
 };
 
 int rt_hw_can_ymodem_init(void)
 {
     rt_err_t result = 0;
     
-    can_ymodem_device.ops = &_can_ymodem_ops;
+    can_ymodem_device.ops = &topctrl_can_ymodem_ops;
+    
+    can_ymodem_device.channel = CAN_ID_KEYBOARD0_TO_SC_FILE;
     
     result = rt_hw_can_ymodem_register(&can_ymodem_device, "can_ymodem", RT_DEVICE_FLAG_RDWR, RT_NULL);
     

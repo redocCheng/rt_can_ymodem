@@ -74,7 +74,10 @@ static void rt_hw_can_ymodem_rx(struct rt_can_ymodem_device *can_ymodem,
 
 void rt_can_ymodem_rx(struct rt_can_ymodem_device *can_ymodem, const void  *buffer, rt_size_t size)
 {
-    rt_hw_can_ymodem_rx(can_ymodem, buffer, size);
+    if(can_ymodem->parent.open_flag & RT_DEVICE_FLAG_RDWR)
+    {
+        rt_hw_can_ymodem_rx(can_ymodem, buffer, size);
+    }
 }
 
 rt_inline int _can_ymodem_rx(struct rt_can_ymodem_device *can_ymodem, rt_uint8_t *data, int length)
@@ -148,7 +151,7 @@ rt_inline int _can_ymodem_tx(struct rt_can_ymodem_device *can_ymodem, rt_uint8_t
         data += len;
         length -= len;
         
-        rt_thread_mdelay(10);
+        rt_thread_mdelay(5);
     }
 
     return size - length;

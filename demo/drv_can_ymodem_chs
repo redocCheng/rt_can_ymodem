@@ -1,0 +1,147 @@
+/*
+ * Copyright (c) 2019-2020, redoc
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Change Logs:
+ * Date           Author       Notes
+ * 2020-04-29     redoc        the first version
+ */
+
+#include "board.h"
+#include "thread_can.h"
+#include "can_ymodem.h"
+#include "drv_can_ymodem.h"
+
+//#define DRV_DEBUG
+#define LOG_TAG             "drv.can_ymodem"
+#include <drv_log.h>
+
+#define CAN_FILE_CMD_SIZE    1
+
+typedef enum
+{
+    CAN_CMD_FILE_CMD_MASTER = 0,
+    CAN_CMD_FILE_CMD_SLAVE,
+    CAN_CMD_FILE_FILE_MASTER,
+    CAN_CMD_FILE_FILE_SLAVE,
+    
+}can_cmd_file_t;
+
+typedef enum
+{
+    CAN_YMODEM_CH_0 = 0,
+    CAN_YMODEM_CH_1,
+    CAN_YMODEM_CH_2,
+    CAN_YMODEM_CH_3,
+    CAN_YMODEM_CH_4,
+    
+}can_ymodem_ch_t;
+
+struct rt_can_ymodem_device can_ymodem_device[5];
+
+static rt_err_t can_file_send(uint32_t can_id, can_cmd_file_t cmd, uint8_t *buffer, uint8_t size);
+static uint8_t canid_2_ch(uint32_t canid);
+
+static uint8_t canid_2_ch(uint32_t canid)
+{
+    uint8_t ch = 0xff;
+    
+    switch(canid)
+    {
+     case CAN_ID_0_TO_SC_FILE :
+         ch = CAN_YMODEM_CH_0;
+         break;
+     case CAN_ID_1_TO_SC_FILE :
+         ch = CAN_YMODEM_CH_1;
+         break;
+     case CAN_ID_2_TO_SC_FILE:
+         ch = CAN_YMODEM_CH_2;
+         break;
+     case CAN_ID_3_TO_SC_FILE :
+         ch = CAN_YMODEM_CH_3;
+         break;
+     case CAN_ID_4_TO_SC_FILE  :
+         ch = CAN_YMODEM_CH_4;
+         break;
+     default:
+         break;
+    }
+    return ch;
+}
+
+static rt_err_t can_file_send(uint32_t can_id, can_cmd_file_t cmd, uint8_t *buffer, uint8_t size)
+{
+    uint8_t *pdata = rt_calloc(1, 8);
+    
+    if(0 == size)
+    {
+        log_e("can file send size can't be zero!");
+        goto __exit;
+    }
+    
+    *pdata = cmd;
+    rt_memcpy(pdata + CAN_FILE_CMD_SIZE, buffer, size);
+
+    can_send(can_id, pdata, size + CAN_FILE_CMD_SIZE);
+    
+    rt_free(pdata);
+    
+    return RT_EOK;
+    
+__exit:
+    
+    rt_free(pdata);
+    
+    return -RT_ERROR;
+}
+
+static int rt_hw_can_ymodem_send(struct rt_can_ymodem_device *can_ymodem,
+                                 const void       *buffer,
+                                 rt_size_t         size)
+{
+    can_file_send(can_ymodem->channel, CAN_CMD_FILE_FILE_MASTER, (uint8_t*)buffer, size);
+    return RT_EOK;
+}    
+
+void drv_can_ymodem_recv(uint32_t canid, const void *buffer, rt_size_t size)
+{
+    uint8_t ch = canid_2_ch(canid);
+    
+    if(ch <= CAN_YMODEM_CH_4)
+    {
+        rt_can_ymodem_rx(&can_ymodem_device[ch], buffer, size);
+    }
+    else
+    {
+        log_e("can ymodem recv id param error.");
+    }
+}
+
+static const struct rt_can_ymodem_ops sc_can_ymodem_ops =
+{
+    .puts = rt_hw_can_ymodem_send,
+};
+
+int rt_hw_can_ymodem_init(void)
+{
+    for(can_ymodem_ch_t ch = CAN_YMODEM_CH_0; ch <= CAN_YMODEM_CH_4; ch++)
+    {
+        can_ymodem_device[ch].ops = &sc_can_ymodem_ops;
+    }
+
+    can_ymodem_device[CAN_YMODEM_CH_0].channel = CAN_ID_0_TO_SC_FILE;
+    can_ymodem_device[CAN_YMODEM_CH_1].channel = CAN_ID_1_TO_SC_FILE;
+    can_ymodem_device[CAN_YMODEM_CH_2].channel = CAN_ID_2_TO_SC_FILE;
+    can_ymodem_device[CAN_YMODEM_CH_3].channel = CAN_ID_3_TO_SC_FILE;
+    can_ymodem_device[CAN_YMODEM_CH_4].channel = CAN_ID_4_TO_SC_FILE;
+    
+    rt_hw_can_ymodem_register(&can_ymodem_device[CAN_YMODEM_CH_0], "can_ymodem_0", RT_DEVICE_FLAG_RDWR, RT_NULL);
+    rt_hw_can_ymodem_register(&can_ymodem_device[CAN_YMODEM_CH_1], "can_ymodem_1", RT_DEVICE_FLAG_RDWR, RT_NULL);
+    rt_hw_can_ymodem_register(&can_ymodem_device[CAN_YMODEM_CH_2], "can_ymodem_2", RT_DEVICE_FLAG_RDWR, RT_NULL);
+    rt_hw_can_ymodem_register(&can_ymodem_device[CAN_YMODEM_CH_3], "can_ymodem_3", RT_DEVICE_FLAG_RDWR, RT_NULL);
+    rt_hw_can_ymodem_register(&can_ymodem_device[CAN_YMODEM_CH_4], "can_ymodem_4", RT_DEVICE_FLAG_RDWR, RT_NULL);
+    
+    return 0;
+}
+INIT_DEVICE_EXPORT(rt_hw_can_ymodem_init);
